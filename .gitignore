@@ -1,0 +1,38 @@
+## SQL Server and Database files
+*.mdf
+*.ldf
+*.ndf
+*.bak
+*.trn
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# Visual Studio cache/options directory
+.vs/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Azure credentials and connection strings
+*.publishsettings
+local.settings.json
+appsettings.Development.json
+
+# Migration scripts output
+migration-output/
+backup/
