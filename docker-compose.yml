@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: lakeview-sqlserver
+    hostname: lakeview-sql
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=LakeviewMedical2024!
+      - MSSQL_PID=Developer
+      - MSSQL_AGENT_ENABLED=true
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+      - ./Deployment:/scripts
+      - ./Databases:/databases
+      - ./SeedData:/seeddata
+    networks:
+      - lakeview-network
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P LakeviewMedical2024! -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+
+  # Simulated external systems (for linked server testing)
+  pharmacy-db:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: pharmacy-system
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Pharmacy2024!
+      - MSSQL_PID=Express
+    ports:
+      - "1434:1433"
+    networks:
+      - lakeview-network
+
+  insurance-db:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: insurance-system
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Insurance2024!
+      - MSSQL_PID=Express
+    ports:
+      - "1435:1433"
+    networks:
+      - lakeview-network
+
+volumes:
+  sqlserver-data:
+    driver: local
+
+networks:
+  lakeview-network:
+    driver: bridge
