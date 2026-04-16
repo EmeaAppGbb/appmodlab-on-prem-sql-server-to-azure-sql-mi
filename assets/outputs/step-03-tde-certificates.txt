@@ -1,0 +1,5 @@
+Step 3: Prepare TDE Certificates - Created TDE migration scripts
+Files created:
+  - Migration/04-ExportTDECertificates.sql - Export TDE cert and private key from source
+  - Migration/05-ImportTDECertificates.sql - Import TDE cert into Azure SQL MI
+  - Migration/06-TDEValidation.sql - Validate TDE post-migration
