@@ -1,0 +1,5 @@
+Step 5: Start Migration - backup/restore, log shipping, and monitoring scripts
+Files created:
+  - Migration/10-BackupAndRestore.sql - Full backups with compression/checksum, restore with NORECOVERY
+  - Migration/11-LogShipping.sql - Continuous transaction log shipping to Azure Blob
+  - Migration/12-MigrationMonitoring.sql - Migration status dashboard for all 4 databases
