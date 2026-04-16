@@ -1,0 +1,6 @@
+Step 10: Post-Migration - Performance baseline, monitoring, SSRS migration, and validation
+Files created:
+  - Migration/25-PerformanceBaseline.sql - Performance baselines and comparison framework
+  - Migration/26-MonitoringSetup.ps1 - Azure Monitor and SQL Analytics setup
+  - Migration/27-SSRSMigration.md - SSRS to Power BI migration guide
+  - Migration/28-PostMigrationValidation.sql - Comprehensive post-migration validation
