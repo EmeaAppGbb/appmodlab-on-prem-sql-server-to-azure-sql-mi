@@ -1,0 +1,5 @@
+Step 7: Reconfigure Linked Servers - Created linked server migration and validation scripts
+Files created:
+  - Migration/16-ReconfigureLinkedServers.sql - Recreate linked servers with cloud endpoints
+  - Migration/17-LinkedServerValidation.sql - Validate linked server connectivity
+  - Migration/18-LinkedServerAlternatives.md - Alternative connectivity patterns guide
