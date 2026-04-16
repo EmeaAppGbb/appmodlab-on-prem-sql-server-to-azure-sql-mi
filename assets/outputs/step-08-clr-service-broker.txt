@@ -1,0 +1,5 @@
+Step 8: Validate CLR and Service Broker - Created CLR migration, Service Broker migration, and validation scripts
+Files created:
+  - Migration/19-CLRMigration.sql - Deploy CLR assemblies on MI with cert-based signing
+  - Migration/20-ServiceBrokerMigration.sql - Recreate Service Broker config on MI
+  - Migration/21-CLRServiceBrokerValidation.sql - Comprehensive CLR and Service Broker validation
