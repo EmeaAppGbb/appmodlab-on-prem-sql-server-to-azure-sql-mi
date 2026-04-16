@@ -1,0 +1,5 @@
+Step 6: Migrate Agent Jobs - Created job migration, validation, and mapping scripts
+Files created:
+  - Migration/13-MigrateAgentJobs.sql - Recreate all Agent jobs with MI syntax
+  - Migration/14-AgentJobValidation.sql - Validate migrated jobs
+  - Migration/15-AgentJobMapping.md - Job mapping document
