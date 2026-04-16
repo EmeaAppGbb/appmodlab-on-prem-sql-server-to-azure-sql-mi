@@ -1,0 +1,5 @@
+Step 9: Cutover - Final log restore, connection string switch, and cutover checklist
+Files created:
+  - Migration/22-CutoverProcedure.sql - Final cutover with tail-log restore and integrity checks
+  - Migration/23-ConnectionStringUpdate.ps1 - Connection string update with Key Vault
+  - Migration/24-CutoverChecklist.md - Detailed cutover checklist with rollback plan
