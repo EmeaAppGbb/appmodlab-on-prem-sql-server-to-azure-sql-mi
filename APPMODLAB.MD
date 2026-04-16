@@ -100,3 +100,85 @@ Visual walkthroughs of the lab's key database objects and migration challenges. 
 | 5 | [Service Broker](assets/screenshots/05-service-broker-messaging.html) | Async messaging between PatientDB and BillingDB with activation procedures |
 | 6 | [SQL Agent Jobs](assets/screenshots/06-sql-agent-jobs.html) | 7 automated jobs (billing, claims, archival, backups) + 4 monitoring alerts |
 | 7 | [Docker Compose](assets/screenshots/07-docker-compose-environment.html) | 3-container lab environment: main SQL Server + pharmacy + insurance systems |
+
+## Solution Walkthrough
+
+The complete migration solution is available on the `solution-final` branch with each step tagged for easy navigation. All code changes were generated using **GitHub Copilot CLI** (`gh copilot`).
+
+### How to Use
+
+```bash
+# View the full solution
+git checkout solution-final
+
+# Jump to a specific step
+git checkout step-01-assessment   # Step 1: Assessment scripts
+git checkout step-05-start-migration  # Step 5: Migration scripts
+```
+
+### Steps, Prompts, and Outputs
+
+| Step | Tag | Description | CLI Prompt Summary | Output File |
+|------|-----|-------------|-------------------|-------------|
+| 01 | `step-01-assessment` | Assess Current Environment | Create DMA assessment, compatibility report, and inventory scripts for all 4 databases | `assets/outputs/step-01-assessment.txt` |
+| 02 | `step-02-provision-mi` | Provision Managed Instance | Create Bicep IaC for VNet, SQL MI, DMS, and deployment script | `assets/outputs/step-02-provision-mi.txt` |
+| 03 | `step-03-tde-certificates` | Prepare TDE Certificates | Create TDE certificate export, import, and validation scripts | `assets/outputs/step-03-tde-certificates.txt` |
+| 04 | `step-04-configure-dms` | Configure DMS | Create DMS project config JSON, PowerShell migration script, and pre-checks | `assets/outputs/step-04-configure-dms.txt` |
+| 05 | `step-05-start-migration` | Start Migration | Create backup/restore, log shipping, and migration monitoring scripts | `assets/outputs/step-05-start-migration.txt` |
+| 06 | `step-06-agent-jobs` | Migrate Agent Jobs | Recreate Agent jobs with MI-compatible syntax, validation, and mapping doc | `assets/outputs/step-06-agent-jobs.txt` |
+| 07 | `step-07-linked-servers` | Reconfigure Linked Servers | Reconfigure linked servers for cloud endpoints with validation | `assets/outputs/step-07-linked-servers.txt` |
+| 08 | `step-08-clr-service-broker` | Validate CLR & Service Broker | Deploy CLR assemblies and Service Broker config on MI with validation | `assets/outputs/step-08-clr-service-broker.txt` |
+| 09 | `step-09-cutover` | Cutover | Final cutover procedure, connection string update, and checklist | `assets/outputs/step-09-cutover.txt` |
+| 10 | `step-10-post-migration` | Post-Migration | Performance baseline, monitoring setup, SSRS migration guide | `assets/outputs/step-10-post-migration.txt` |
+
+### CLI Command Pattern
+
+Each step was executed using:
+
+```powershell
+gh copilot -- -p "<STEP PROMPT>" --allow-all-tools --yolo
+```
+
+### Migration Scripts Created (Migration/ directory)
+
+| # | File | Purpose |
+|---|------|---------|
+| 01 | `01-DMA-Assessment.sql` | Data Migration Assistant assessment for all 4 databases |
+| 02 | `02-CompatibilityReport.sql` | MI compatibility report with blockers and recommendations |
+| 03 | `03-InventoryAssessment.sql` | Database object inventory across all databases |
+| 04 | `04-ExportTDECertificates.sql` | Export TDE certificates from source SQL Server |
+| 05 | `05-ImportTDECertificates.sql` | Import TDE certificates into Azure SQL MI |
+| 06 | `06-TDEValidation.sql` | Validate TDE configuration post-migration |
+| 07 | `07-DMSProjectSetup.json` | DMS project configuration for online migration |
+| 08 | `08-DMSMigrationConfig.ps1` | PowerShell DMS migration setup script |
+| 09 | `09-DMSPreChecks.sql` | Pre-migration readiness checklist |
+| 10 | `10-BackupAndRestore.sql` | Full backup and restore with NORECOVERY |
+| 11 | `11-LogShipping.sql` | Continuous log shipping to Azure Blob |
+| 12 | `12-MigrationMonitoring.sql` | Migration progress monitoring dashboard |
+| 13 | `13-MigrateAgentJobs.sql` | Recreate Agent jobs on MI |
+| 14 | `14-AgentJobValidation.sql` | Validate migrated Agent jobs |
+| 15 | `15-AgentJobMapping.md` | Source-to-target job mapping document |
+| 16 | `16-ReconfigureLinkedServers.sql` | Linked server cloud endpoint reconfiguration |
+| 17 | `17-LinkedServerValidation.sql` | Linked server connectivity validation |
+| 18 | `18-LinkedServerAlternatives.md` | Alternative connectivity patterns guide |
+| 19 | `19-CLRMigration.sql` | Deploy CLR assemblies on MI |
+| 20 | `20-ServiceBrokerMigration.sql` | Service Broker configuration on MI |
+| 21 | `21-CLRServiceBrokerValidation.sql` | CLR and Service Broker validation |
+| 22 | `22-CutoverProcedure.sql` | Final cutover with integrity checks |
+| 23 | `23-ConnectionStringUpdate.ps1` | Connection string update with Key Vault |
+| 24 | `24-CutoverChecklist.md` | Detailed cutover checklist with rollback plan |
+| 25 | `25-PerformanceBaseline.sql` | Performance baseline and comparison framework |
+| 26 | `26-MonitoringSetup.ps1` | Azure Monitor and SQL Analytics setup |
+| 27 | `27-SSRSMigration.md` | SSRS to Power BI migration guide |
+| 28 | `28-PostMigrationValidation.sql` | Comprehensive post-migration validation |
+
+### Infrastructure as Code (Infrastructure/ directory)
+
+| File | Purpose |
+|------|---------|
+| `main.bicep` | Main orchestrator for all Azure resources |
+| `modules/vnet.bicep` | VNet with MI-delegated subnet and NSG rules |
+| `modules/sqlmi.bicep` | Azure SQL Managed Instance (GP, 8 vCores) |
+| `modules/dms.bicep` | Azure Database Migration Service |
+| `parameters.json` | Parameter file with lab defaults |
+| `deploy.sh` | Deployment script using Azure CLI |
