@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Linked Servers — External System Connections</title>
+<style>
+  body { margin:0; background:#1e1e1e; font-family:'Cascadia Code','Fira Code','Consolas',monospace; }
+  .window { max-width:960px; margin:24px auto; border-radius:10px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,.5); }
+  .titlebar { background:#323233; padding:10px 16px; display:flex; align-items:center; gap:8px; }
+  .dot { width:12px; height:12px; border-radius:50%; }
+  .dot.r { background:#ff5f57; } .dot.y { background:#febc2e; } .dot.g { background:#28c840; }
+  .titlebar span { color:#9d9d9d; font-size:13px; margin-left:12px; }
+  .badge { display:inline-block; font-size:11px; padding:2px 8px; border-radius:4px; margin-left:8px; }
+  .badge.red { background:#b71c1c; color:#ef9a9a; }
+  .badge.info { background:#264f78; color:#569cd6; }
+  pre { margin:0; padding:20px 24px; background:#1e1e1e; color:#d4d4d4; font-size:13px; line-height:1.55; overflow-x:auto; }
+  .kw { color:#569cd6; }
+  .fn { color:#dcdcaa; }
+  .str { color:#ce9178; }
+  .cm { color:#6a9955; }
+  .srv { color:#f48fb1; font-weight:bold; }
+  .danger { background:#4a1010; display:block; border-left:3px solid #f44336; padding-left:8px; margin:2px 0; }
+  .section { color:#c586c0; font-weight:bold; display:block; margin-top:12px; }
+  .footer { background:#c62828; color:#fff; font-size:12px; padding:6px 16px; display:flex; justify-content:space-between; }
+</style>
+</head>
+<body>
+<div class="window">
+  <div class="titlebar">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span>LinkedServers / 01-CreateLinkedServers.sql</span>
+    <span class="badge red">🔗 4 Linked Servers</span>
+    <span class="badge info">Not supported on MI</span>
+  </div>
+  <pre>
+<span class="kw">USE</span> master;
+<span class="kw">GO</span>
+
+<span class="section">── 1. PHARMACY_SERVER ──────────────────────────</span>
+<span class="cm">-- Pharmacy dispensing system (real-time drug verification)</span>
+<span class="kw">EXEC</span> <span class="fn">sp_addlinkedserver</span>
+    @server   = N<span class="str">'PHARMACY_SERVER'</span>,
+    @provider = N<span class="str">'SQLNCLI11'</span>,
+    @datasrc  = N<span class="str">'PHARM-SQL-01.lakeviewmedical.local'</span>;
+<span class="danger"><span class="kw">EXEC</span> <span class="fn">sp_addlinkedsrvlogin</span>
+    @rmtsrvname = N<span class="str">'PHARMACY_SERVER'</span>,
+    @rmtuser    = N<span class="str">'pharmacy_interface'</span>,
+    @rmtpassword= N<span class="str">'Ph@rm_Int3rf@c3_2016!'</span>;  <span class="cm">-- ⚠ Hardcoded credentials</span></span>
+
+<span class="section">── 2. INSURANCE_CLEARINGHOUSE ──────────────────</span>
+<span class="cm">-- EDI claim submission &amp; eligibility checks</span>
+<span class="kw">EXEC</span> <span class="fn">sp_addlinkedserver</span>
+    @server   = N<span class="str">'INSURANCE_CLEARINGHOUSE'</span>,
+    @provider = N<span class="str">'SQLNCLI11'</span>,
+    @datasrc  = N<span class="str">'CLH-SQL-01.clearinghouse.local'</span>;
+
+<span class="section">── 3. LAB_SYSTEM ──────────────────────────────</span>
+<span class="cm">-- Lab Information System (LabCorp/Quest interface)</span>
+<span class="kw">EXEC</span> <span class="fn">sp_addlinkedserver</span>
+    @server   = N<span class="str">'LAB_SYSTEM'</span>,
+    @provider = N<span class="str">'SQLNCLI11'</span>,
+    @datasrc  = N<span class="str">'LIS-SQL-01.lakeviewmedical.local'</span>;
+
+<span class="section">── 4. RADIOLOGY_PACS ──────────────────────────</span>
+<span class="cm">-- PACS system via Oracle OLE DB provider</span>
+<span class="kw">EXEC</span> <span class="fn">sp_addlinkedserver</span>
+    @server      = N<span class="str">'RADIOLOGY_PACS'</span>,
+    @srvproduct  = N<span class="str">'Oracle'</span>,
+    @provider    = N<span class="str">'OraOLEDB.Oracle'</span>,
+    @datasrc     = N<span class="str">'PACS-ORA-01.lakeviewmedical.local/PACSDB'</span>;
+
+<span class="cm">-- All servers configured with:</span>
+<span class="cm">--   RPC / RPC OUT = true</span>
+<span class="cm">--   Data access = true</span>
+<span class="cm">--   Query timeout = 60s</span>
+<span class="cm">--   Connect timeout = 30s</span>
+  </pre>
+  <div class="footer">
+    <span>🚫 Linked servers not supported in Azure SQL MI — requires alternative architecture</span>
+    <span>Migration Blocker</span>
+  </div>
+</div>
+</body>
+</html>

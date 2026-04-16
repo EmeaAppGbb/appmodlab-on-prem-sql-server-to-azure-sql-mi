@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Docker Compose — Lab Environment</title>
+<style>
+  body { margin:0; background:#1e1e1e; font-family:'Cascadia Code','Fira Code','Consolas',monospace; }
+  .window { max-width:960px; margin:24px auto; border-radius:10px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,.5); }
+  .titlebar { background:#323233; padding:10px 16px; display:flex; align-items:center; gap:8px; }
+  .dot { width:12px; height:12px; border-radius:50%; }
+  .dot.r { background:#ff5f57; } .dot.y { background:#febc2e; } .dot.g { background:#28c840; }
+  .titlebar span { color:#9d9d9d; font-size:13px; margin-left:12px; }
+  .badge { display:inline-block; font-size:11px; padding:2px 8px; border-radius:4px; margin-left:8px; background:#1565c0; color:#90caf9; }
+  pre { margin:0; padding:20px 24px; background:#1e1e1e; color:#d4d4d4; font-size:13px; line-height:1.55; overflow-x:auto; }
+  .key { color:#9cdcfe; }
+  .val { color:#ce9178; }
+  .cm { color:#6a9955; }
+  .num { color:#b5cea8; }
+  .srv { color:#c586c0; font-weight:bold; }
+  .section { color:#569cd6; font-weight:bold; }
+  .footer { background:#0277bd; color:#fff; font-size:12px; padding:6px 16px; display:flex; justify-content:space-between; }
+</style>
+</head>
+<body>
+<div class="window">
+  <div class="titlebar">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span>docker-compose.yml</span>
+    <span class="badge">🐳 3 Containers</span>
+  </div>
+  <pre>
+<span class="section">version:</span> <span class="val">'3.8'</span>
+
+<span class="section">services:</span>
+
+  <span class="srv">sqlserver:</span>                      <span class="cm"># Main Lakeview instance</span>
+    <span class="key">image:</span> <span class="val">mcr.microsoft.com/mssql/server:2019-latest</span>
+    <span class="key">container_name:</span> <span class="val">lakeview-sqlserver</span>
+    <span class="key">environment:</span>
+      - <span class="key">ACCEPT_EULA</span>=<span class="val">Y</span>
+      - <span class="key">SA_PASSWORD</span>=<span class="val">LakeviewMedical2024!</span>
+      - <span class="key">MSSQL_PID</span>=<span class="val">Developer</span>
+      - <span class="key">MSSQL_AGENT_ENABLED</span>=<span class="val">true</span>
+    <span class="key">ports:</span>
+      - <span class="val">"<span class="num">1433</span>:1433"</span>
+    <span class="key">volumes:</span>
+      - <span class="val">./Deployment:/scripts</span>
+      - <span class="val">./Databases:/databases</span>
+      - <span class="val">./SeedData:/seeddata</span>
+    <span class="key">healthcheck:</span>
+      <span class="key">test:</span> <span class="val">sqlcmd -S localhost -U sa -Q "SELECT 1"</span>
+      <span class="key">interval:</span> <span class="num">10</span>s
+
+  <span class="srv">pharmacy-db:</span>                   <span class="cm"># Simulated pharmacy system</span>
+    <span class="key">image:</span> <span class="val">mcr.microsoft.com/mssql/server:2019-latest</span>
+    <span class="key">container_name:</span> <span class="val">pharmacy-system</span>
+    <span class="key">ports:</span>
+      - <span class="val">"<span class="num">1434</span>:1433"</span>
+
+  <span class="srv">insurance-db:</span>                  <span class="cm"># Simulated insurance system</span>
+    <span class="key">image:</span> <span class="val">mcr.microsoft.com/mssql/server:2019-latest</span>
+    <span class="key">container_name:</span> <span class="val">insurance-system</span>
+    <span class="key">ports:</span>
+      - <span class="val">"<span class="num">1435</span>:1433"</span>
+
+<span class="section">networks:</span>
+  <span class="key">lakeview-network:</span>
+    <span class="key">driver:</span> <span class="val">bridge</span>
+  </pre>
+  <div class="footer">
+    <span>🐳 SQL Server 2019 + Pharmacy + Insurance containers on bridge network</span>
+    <span>docker-compose up -d</span>
+  </div>
+</div>
+</body>
+</html>

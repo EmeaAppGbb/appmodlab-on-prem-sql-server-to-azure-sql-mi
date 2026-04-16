@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lab Architecture Overview — Lakeview Medical Center</title>
+<style>
+  body { margin:0; background:#0d1117; font-family:'Segoe UI','Helvetica Neue',sans-serif; }
+  .window { max-width:960px; margin:24px auto; border-radius:10px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,.5); }
+  .titlebar { background:#161b22; padding:10px 16px; display:flex; align-items:center; gap:8px; }
+  .dot { width:12px; height:12px; border-radius:50%; }
+  .dot.r { background:#ff5f57; } .dot.y { background:#febc2e; } .dot.g { background:#28c840; }
+  .titlebar span { color:#8b949e; font-size:13px; margin-left:12px; }
+  .content { padding:28px 32px; background:#0d1117; color:#c9d1d9; }
+  h1 { color:#58a6ff; font-size:22px; margin:0 0 4px; }
+  .subtitle { color:#8b949e; font-size:14px; margin-bottom:24px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .card { background:#161b22; border:1px solid #30363d; border-radius:8px; padding:16px; }
+  .card h3 { margin:0 0 8px; font-size:15px; }
+  .card h3 .icon { margin-right:6px; }
+  .card ul { margin:0; padding-left:20px; font-size:13px; line-height:1.8; color:#8b949e; }
+  .card ul li { color:#c9d1d9; }
+  .card.db h3 { color:#58a6ff; }
+  .card.warn h3 { color:#f0883e; }
+  .card.ok h3 { color:#3fb950; }
+  .card.red h3 { color:#f85149; }
+  .stats { display:flex; gap:16px; margin-top:20px; flex-wrap:wrap; }
+  .stat { background:#161b22; border:1px solid #30363d; border-radius:8px; padding:12px 20px; text-align:center; flex:1; min-width:120px; }
+  .stat .num { font-size:28px; font-weight:bold; color:#58a6ff; }
+  .stat .label { font-size:12px; color:#8b949e; margin-top:4px; }
+  .footer { background:#238636; color:#fff; font-size:12px; padding:6px 16px; display:flex; justify-content:space-between; }
+</style>
+</head>
+<body>
+<div class="window">
+  <div class="titlebar">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span>Lakeview Medical Center — SQL Server → Azure SQL MI Migration Lab</span>
+  </div>
+  <div class="content">
+    <h1>🏥 Lakeview Medical Center</h1>
+    <p class="subtitle">On-premises SQL Server 2016 → Azure SQL Managed Instance migration lab</p>
+
+    <div class="grid">
+      <div class="card db">
+        <h3><span class="icon">🗄️</span>4 Databases</h3>
+        <ul>
+          <li><strong>PatientDB</strong> — 16 tables, 8 views, 8 sprocs, 9 functions</li>
+          <li><strong>BillingDB</strong> — 9 tables, 5 cross-DB stored procs</li>
+          <li><strong>ReportingDB</strong> — 5 cross-DB aggregate views</li>
+          <li><strong>SchedulingDB</strong> — 5 tables, room &amp; appointment mgmt</li>
+        </ul>
+      </div>
+      <div class="card warn">
+        <h3><span class="icon">⚠️</span>Migration Challenges</h3>
+        <ul>
+          <li>Cross-database queries (PatientDB ↔ BillingDB)</li>
+          <li>CLR assemblies (.NET medical calculations)</li>
+          <li>Service Broker async messaging</li>
+          <li>Linked servers (4 external systems)</li>
+        </ul>
+      </div>
+      <div class="card ok">
+        <h3><span class="icon">✅</span>Supported on MI</h3>
+        <ul>
+          <li>SQL Agent jobs (7 jobs + 4 alerts)</li>
+          <li>Service Broker (within instance)</li>
+          <li>CLR (with TRUSTWORTHY or signing)</li>
+          <li>TDE encryption (built-in on MI)</li>
+        </ul>
+      </div>
+      <div class="card red">
+        <h3><span class="icon">🚫</span>Not Supported on MI</h3>
+        <ul>
+          <li>Linked servers to on-prem systems</li>
+          <li>Cross-database queries (3-part names)</li>
+          <li>SQLNCLI11 / OraOLEDB providers</li>
+          <li>UNC backup paths (\\BACKUP-SERVER\)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="num">4</div><div class="label">Databases</div></div>
+      <div class="stat"><div class="num">30</div><div class="label">Tables</div></div>
+      <div class="stat"><div class="num">13</div><div class="label">Stored Procs</div></div>
+      <div class="stat"><div class="num">6</div><div class="label">CLR Functions</div></div>
+      <div class="stat"><div class="num">4</div><div class="label">Linked Servers</div></div>
+      <div class="stat"><div class="num">7</div><div class="label">Agent Jobs</div></div>
+    </div>
+  </div>
+  <div class="footer">
+    <span>Healthcare &amp; Life Sciences • Data Modernization • Azure DMS</span>
+    <span>v1.0.0</span>
+  </div>
+</div>
+</body>
+</html>

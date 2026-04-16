@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CLR Assembly — MedicalCalculations.cs</title>
+<style>
+  body { margin:0; background:#1e1e1e; font-family:'Cascadia Code','Fira Code','Consolas',monospace; }
+  .window { max-width:960px; margin:24px auto; border-radius:10px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,.5); }
+  .titlebar { background:#323233; padding:10px 16px; display:flex; align-items:center; gap:8px; }
+  .dot { width:12px; height:12px; border-radius:50%; }
+  .dot.r { background:#ff5f57; } .dot.y { background:#febc2e; } .dot.g { background:#28c840; }
+  .titlebar span { color:#9d9d9d; font-size:13px; margin-left:12px; }
+  .badge { display:inline-block; font-size:11px; padding:2px 8px; border-radius:4px; margin-left:8px; }
+  .badge.cs { background:#1b5e20; color:#81c784; }
+  .badge.warn { background:#4e3600; color:#ffb74d; }
+  pre { margin:0; padding:20px 24px; background:#1e1e1e; color:#d4d4d4; font-size:13px; line-height:1.55; overflow-x:auto; }
+  .kw { color:#569cd6; }
+  .cls { color:#4ec9b0; }
+  .fn { color:#dcdcaa; }
+  .str { color:#ce9178; }
+  .cm { color:#6a9955; }
+  .num { color:#b5cea8; }
+  .attr { color:#c586c0; }
+  .ns { color:#4ec9b0; }
+  .note { background:#1b3a4b; display:block; border-left:3px solid #29b6f6; padding-left:8px; margin:2px 0; }
+  .footer { background:#2e7d32; color:#fff; font-size:12px; padding:6px 16px; display:flex; justify-content:space-between; }
+</style>
+</head>
+<body>
+<div class="window">
+  <div class="titlebar">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span>CLRAssemblies / MedicalCalculations.cs</span>
+    <span class="badge cs">C# .NET</span>
+    <span class="badge warn">⚠ CLR Assembly</span>
+  </div>
+  <pre>
+<span class="kw">using</span> <span class="ns">System</span>;
+<span class="kw">using</span> <span class="ns">System.Data.SqlClient</span>;
+<span class="kw">using</span> <span class="ns">System.Data.SqlTypes</span>;
+<span class="kw">using</span> <span class="ns">System.Text.RegularExpressions</span>;
+<span class="kw">using</span> <span class="ns">System.Collections.Generic</span>;
+<span class="kw">using</span> <span class="ns">Microsoft.SqlServer.Server</span>;
+
+<span class="kw">namespace</span> <span class="ns">LakeviewMedical.CLR</span>
+{
+    <span class="cm">/// &lt;summary&gt;</span>
+    <span class="cm">/// CLR functions for medical calculations too complex for T-SQL.</span>
+<span class="note">    <span class="cm">/// MIGRATION NOTE: CLR assemblies in Azure SQL MI require:</span></span>
+<span class="note">    <span class="cm">///  - PERMISSION_SET = EXTERNAL_ACCESS may need adjustment</span></span>
+<span class="note">    <span class="cm">///  - Assembly must be signed or db TRUSTWORTHY</span></span>
+<span class="note">    <span class="cm">///  - Some .NET Framework APIs may not be available</span></span>
+    <span class="cm">/// &lt;/summary&gt;</span>
+    <span class="kw">public class</span> <span class="cls">MedicalCalculations</span>
+    {
+        <span class="cm">// ─── Drug Interaction Check ─────────────────</span>
+        [<span class="attr">SqlFunction</span>(
+            DataAccess = <span class="cls">DataAccessKind</span>.Read,
+            IsDeterministic = <span class="kw">false</span>,
+            Name = <span class="str">"fn_CLR_CheckDrugInteractions"</span>)]
+        <span class="kw">public static</span> <span class="cls">SqlString</span> <span class="fn">CheckDrugInteractions</span>(
+            <span class="cls">SqlString</span> drugCode1, <span class="cls">SqlString</span> drugCode2)
+        {
+            <span class="kw">var</span> interactions = <span class="kw">new</span> <span class="cls">Dictionary</span>&lt;<span class="kw">string</span>, <span class="cls">Dictionary</span>&lt;<span class="kw">string</span>, <span class="kw">string</span>&gt;&gt;
+            {
+                { <span class="str">"WARFARIN"</span>, <span class="kw">new</span> <span class="cls">Dictionary</span>&lt;<span class="kw">string</span>, <span class="kw">string</span>&gt; {
+                    { <span class="str">"ASPIRIN"</span>,
+                      <span class="str">"MAJOR: Increased bleeding risk. Monitor INR."</span> },
+                    { <span class="str">"IBUPROFEN"</span>,
+                      <span class="str">"MAJOR: Increased bleeding risk. Avoid."</span> },
+                    { <span class="str">"AMIODARONE"</span>,
+                      <span class="str">"MAJOR: Increases warfarin levels. Reduce 30-50%."</span> }
+                }}
+            };
+            <span class="cm">// ... 5 major drug interaction categories</span>
+            <span class="kw">return</span> <span class="cls">SqlString</span>.Null;
+        }
+
+        <span class="cm">// ─── GFR Calculation (CKD-EPI) ──────────────</span>
+        [<span class="attr">SqlFunction</span>(Name = <span class="str">"fn_CLR_CalculateGFR"</span>)]
+        <span class="kw">public static</span> <span class="cls">SqlDouble</span> <span class="fn">CalculateGFR</span>(
+            <span class="cls">SqlDouble</span> creatinine, <span class="cls">SqlInt32</span> age,
+            <span class="cls">SqlString</span> gender, <span class="cls">SqlString</span> race)
+        {
+            <span class="kw">double</span> scr = creatinine.Value;
+            <span class="kw">double</span> kappa  = (gender.Value == <span class="str">"F"</span>) ? <span class="num">0.7</span>   : <span class="num">0.9</span>;
+            <span class="kw">double</span> alpha  = (gender.Value == <span class="str">"F"</span>) ? -<span class="num">0.329</span> : -<span class="num">0.411</span>;
+            <span class="kw">double</span> gFactor= (gender.Value == <span class="str">"F"</span>) ? <span class="num">1.018</span> : <span class="num">1.0</span>;
+
+            <span class="kw">double</span> gfr = <span class="num">141</span>
+                * Math.Pow(Math.Min(scr / kappa, <span class="num">1.0</span>), alpha)
+                * Math.Pow(Math.Max(scr / kappa, <span class="num">1.0</span>), -<span class="num">1.209</span>)
+                * Math.Pow(<span class="num">0.993</span>, age.Value)
+                * gFactor;
+
+            <span class="kw">return new</span> <span class="cls">SqlDouble</span>(Math.Round(gfr, <span class="num">1</span>));
+        }
+
+        <span class="cm">// ─── HL7 Message Parser (Table-Valued) ──────</span>
+        [<span class="attr">SqlFunction</span>(FillRowMethodName = <span class="str">"FillHL7Row"</span>,
+            TableDefinition = <span class="str">"SegmentName NVARCHAR(10), ..."</span>)]
+        <span class="kw">public static</span> <span class="cls">IEnumerable</span> <span class="fn">ParseHL7Segments</span>(
+            <span class="cls">SqlString</span> hl7Message) { <span class="cm">/* ... */</span> }
+
+        <span class="cm">// ─── Drug Name Normalization ────────────────</span>
+        [<span class="attr">SqlFunction</span>(Name = <span class="str">"fn_CLR_NormalizeDrugName"</span>)]
+        <span class="kw">public static</span> <span class="cls">SqlString</span> <span class="fn">NormalizeDrugName</span>(
+            <span class="cls">SqlString</span> drugName) { <span class="cm">/* ... */</span> }
+    }
+}
+  </pre>
+  <div class="footer">
+    <span>🔬 6 CLR functions — drug interactions, GFR, BMI, ICD-10, HL7 parser</span>
+    <span>Requires TRUSTWORTHY or code signing</span>
+  </div>
+</div>
+</body>
+</html>

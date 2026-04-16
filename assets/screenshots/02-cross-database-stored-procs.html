@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cross-Database Stored Procedures — BillingDB</title>
+<style>
+  body { margin:0; background:#1e1e1e; font-family:'Cascadia Code','Fira Code','Consolas',monospace; }
+  .window { max-width:980px; margin:24px auto; border-radius:10px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,.5); }
+  .titlebar { background:#323233; padding:10px 16px; display:flex; align-items:center; gap:8px; }
+  .dot { width:12px; height:12px; border-radius:50%; }
+  .dot.r { background:#ff5f57; } .dot.y { background:#febc2e; } .dot.g { background:#28c840; }
+  .titlebar span { color:#9d9d9d; font-size:13px; margin-left:12px; }
+  .badge { display:inline-block; font-size:11px; padding:2px 8px; border-radius:4px; margin-left:8px; }
+  .badge.warn { background:#4e3600; color:#ffb74d; }
+  .badge.info { background:#264f78; color:#569cd6; }
+  pre { margin:0; padding:20px 24px; background:#1e1e1e; color:#d4d4d4; font-size:13px; line-height:1.55; overflow-x:auto; }
+  .kw { color:#569cd6; }
+  .fn { color:#dcdcaa; }
+  .str { color:#ce9178; }
+  .cm { color:#6a9955; }
+  .num { color:#b5cea8; }
+  .typ { color:#4ec9b0; }
+  .xdb { color:#ff8a65; font-weight:bold; }
+  .legacy { background:#3e2723; display:block; border-left:3px solid #ff9800; padding-left:8px; margin:2px 0; }
+  .footer { background:#e65100; color:#fff; font-size:12px; padding:6px 16px; display:flex; justify-content:space-between; }
+</style>
+</head>
+<body>
+<div class="window">
+  <div class="titlebar">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span>BillingDB / 03-StoredProcedures.sql</span>
+    <span class="badge warn">⚠ CROSS-DATABASE</span>
+    <span class="badge info">Migration Blocker</span>
+  </div>
+  <pre>
+<span class="cm">-- ============================================</span>
+<span class="cm">-- BillingDB Stored Procedures</span>
+<span class="cm">-- Contains CROSS-DATABASE QUERIES to PatientDB</span>
+<span class="cm">-- ============================================</span>
+<span class="kw">USE</span> BillingDB;
+<span class="kw">GO</span>
+
+<span class="kw">CREATE PROCEDURE</span> <span class="fn">dbo.usp_ProcessEncounterCharges</span>
+    <span class="kw">@</span>EncounterID <span class="typ">INT</span>
+<span class="kw">AS BEGIN</span>
+    <span class="kw">SET NOCOUNT ON</span>;
+    <span class="kw">DECLARE</span> @PatientID <span class="typ">INT</span>;
+
+    <span class="kw">BEGIN TRY</span>
+        <span class="kw">BEGIN TRANSACTION</span>;
+
+        <span class="cm">-- ⚠ CROSS-DATABASE QUERY: BillingDB → PatientDB</span>
+<span class="legacy">        <span class="kw">SELECT</span> @PatientID = e.PatientID
+        <span class="kw">FROM</span> <span class="xdb">PatientDB.dbo.Encounters</span> e
+        <span class="kw">WHERE</span> e.EncounterID = @EncounterID
+          <span class="kw">AND</span> e.EncounterStatus = <span class="str">'ACTIVE'</span>;</span>
+
+        <span class="cm">-- ⚠ CROSS-DATABASE INSERT pulling from PatientDB</span>
+        <span class="kw">INSERT INTO</span> dbo.BillingCharges (
+            EncounterID, PatientID, ChargeCode, CPTCode,
+            ChargeDescription, ServiceDate, UnitPrice, ChargeAmount,
+            DepartmentCode, PerformingPhysicianNPI, DiagnosisCode1
+        )
+        <span class="kw">SELECT</span>
+            p.EncounterID,
+            p.PatientID,
+            cm.ChargeCode,
+            p.CPTCode,
+            p.CPTDescription,
+            p.ProcedureDate,
+            cm.StandardCharge,
+            cm.StandardCharge,
+<span class="legacy">            <span class="cm">-- Cross-DB lookup: department code</span>
+            (<span class="kw">SELECT TOP</span> <span class="num">1</span> d.DepartmentCode
+             <span class="kw">FROM</span> <span class="xdb">PatientDB.dbo.Departments</span> d
+             <span class="kw">WHERE</span> d.DepartmentID = e.DepartmentID),</span>
+<span class="legacy">            <span class="cm">-- Cross-DB lookup: physician NPI</span>
+            (<span class="kw">SELECT TOP</span> <span class="num">1</span> ph.NPI
+             <span class="kw">FROM</span> <span class="xdb">PatientDB.dbo.Physicians</span> ph
+             <span class="kw">WHERE</span> ph.PhysicianID = p.PerformingPhysicianID),</span>
+<span class="legacy">            <span class="cm">-- Cross-DB lookup: primary diagnosis</span>
+            (<span class="kw">SELECT TOP</span> <span class="num">1</span> dx.ICDCode
+             <span class="kw">FROM</span> <span class="xdb">PatientDB.dbo.Diagnoses</span> dx
+             <span class="kw">WHERE</span> dx.EncounterID = @EncounterID
+               <span class="kw">AND</span> dx.DiagnosisType = <span class="str">'PRIMARY'</span>)</span>
+        <span class="kw">FROM</span> <span class="xdb">PatientDB.dbo.Procedures</span> p
+        <span class="kw">INNER JOIN</span> <span class="xdb">PatientDB.dbo.Encounters</span> e
+            <span class="kw">ON</span> p.EncounterID = e.EncounterID
+        <span class="kw">LEFT JOIN</span> dbo.Chargemaster cm
+            <span class="kw">ON</span> p.CPTCode = cm.CPTCode
+        <span class="kw">WHERE</span> p.EncounterID = @EncounterID
+          <span class="kw">AND</span> p.ProcedureStatus = <span class="str">'COMPLETED'</span>;
+
+        <span class="kw">COMMIT TRANSACTION</span>;
+    <span class="kw">END TRY</span>
+    <span class="kw">BEGIN CATCH</span>
+        <span class="kw">ROLLBACK TRANSACTION</span>;
+        <span class="kw">THROW</span>;
+    <span class="kw">END CATCH</span>
+<span class="kw">END</span>;
+  </pre>
+  <div class="footer">
+    <span>⚠ 5 stored procedures with cross-database queries — requires refactoring for Azure SQL MI</span>
+    <span>Migration Blocker</span>
+  </div>
+</div>
+</body>
+</html>

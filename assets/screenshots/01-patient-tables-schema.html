@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PatientDB Tables Schema — Lakeview Medical Center</title>
+<style>
+  body { margin:0; background:#1e1e1e; font-family:'Cascadia Code','Fira Code','Consolas',monospace; }
+  .window { max-width:960px; margin:24px auto; border-radius:10px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,.5); }
+  .titlebar { background:#323233; padding:10px 16px; display:flex; align-items:center; gap:8px; }
+  .dot { width:12px; height:12px; border-radius:50%; }
+  .dot.r { background:#ff5f57; } .dot.y { background:#febc2e; } .dot.g { background:#28c840; }
+  .titlebar span { color:#9d9d9d; font-size:13px; margin-left:12px; }
+  .badge { display:inline-block; background:#264f78; color:#569cd6; font-size:11px; padding:2px 8px; border-radius:4px; margin-left:8px; }
+  pre { margin:0; padding:20px 24px; background:#1e1e1e; color:#d4d4d4; font-size:13px; line-height:1.55; overflow-x:auto; }
+  .kw { color:#569cd6; }           /* SQL keywords */
+  .fn { color:#dcdcaa; }           /* functions */
+  .str { color:#ce9178; }          /* strings */
+  .cm { color:#6a9955; }           /* comments */
+  .num { color:#b5cea8; }          /* numbers */
+  .typ { color:#4ec9b0; }         /* types */
+  .op { color:#d4d4d4; }          /* operators */
+  .legacy { background:#3e2723; display:block; border-left:3px solid #ff9800; padding-left:8px; margin:2px 0; }
+  .footer { background:#007acc; color:#fff; font-size:12px; padding:6px 16px; display:flex; justify-content:space-between; }
+</style>
+</head>
+<body>
+<div class="window">
+  <div class="titlebar">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span>PatientDB / 02-Tables.sql</span>
+    <span class="badge">SQL Server 2016</span>
+    <span class="badge">16 Tables</span>
+  </div>
+  <pre>
+<span class="cm">-- ============================================</span>
+<span class="cm">-- PatientDB Tables — Lakeview Medical Center</span>
+<span class="cm">-- SQL Server 2016 (Compatibility Level 130)</span>
+<span class="cm">-- ============================================</span>
+<span class="kw">USE</span> PatientDB;
+<span class="kw">GO</span>
+
+<span class="cm">-- ─── Departments ────────────────────────────</span>
+<span class="kw">CREATE TABLE</span> <span class="fn">dbo.Departments</span> (
+    DepartmentID        <span class="typ">INT</span> <span class="kw">IDENTITY</span>(<span class="num">1</span>,<span class="num">1</span>) <span class="kw">NOT NULL</span>,
+    DepartmentCode      <span class="typ">VARCHAR</span>(<span class="num">10</span>)  <span class="kw">NOT NULL</span>,
+    DepartmentName      <span class="typ">NVARCHAR</span>(<span class="num">100</span>) <span class="kw">NOT NULL</span>,
+    CostCenter          <span class="typ">VARCHAR</span>(<span class="num">20</span>)  <span class="kw">NULL</span>,
+    IsActive            <span class="typ">BIT</span> <span class="kw">NOT NULL DEFAULT</span> <span class="num">1</span>,
+    CreatedDate         <span class="typ">DATETIME</span> <span class="kw">NOT NULL DEFAULT</span> <span class="fn">GETDATE</span>(),
+    <span class="kw">CONSTRAINT</span> PK_Departments <span class="kw">PRIMARY KEY CLUSTERED</span> (DepartmentID)
+);
+
+<span class="cm">-- ─── Patients ────────────────────────────────</span>
+<span class="cm">-- ⚠ Legacy: SSN stored as plain text (no encryption)</span>
+<span class="cm">-- ⚠ Legacy: Denormalized address fields</span>
+<span class="kw">CREATE TABLE</span> <span class="fn">dbo.Patients</span> (
+    PatientID           <span class="typ">INT</span> <span class="kw">IDENTITY</span>(<span class="num">100000</span>,<span class="num">1</span>) <span class="kw">NOT NULL</span>,
+    MRN                 <span class="typ">VARCHAR</span>(<span class="num">20</span>)  <span class="kw">NOT NULL</span>,
+<span class="legacy">    SSN                 <span class="typ">VARCHAR</span>(<span class="num">11</span>)  <span class="kw">NULL</span>,  <span class="cm">-- Legacy: stored unencrypted</span></span>
+    FirstName           <span class="typ">NVARCHAR</span>(<span class="num">50</span>) <span class="kw">NOT NULL</span>,
+    LastName            <span class="typ">NVARCHAR</span>(<span class="num">50</span>) <span class="kw">NOT NULL</span>,
+    DateOfBirth         <span class="typ">DATE</span> <span class="kw">NOT NULL</span>,
+    Gender              <span class="typ">CHAR</span>(<span class="num">1</span>) <span class="kw">NOT NULL</span>,
+<span class="legacy">    Address1            <span class="typ">NVARCHAR</span>(<span class="num">200</span>) <span class="kw">NULL</span>,  <span class="cm">-- Legacy: not normalized</span></span>
+<span class="legacy">    Address2            <span class="typ">NVARCHAR</span>(<span class="num">200</span>) <span class="kw">NULL</span>,</span>
+<span class="legacy">    City                <span class="typ">NVARCHAR</span>(<span class="num">100</span>) <span class="kw">NULL</span>,</span>
+<span class="legacy">    State               <span class="typ">CHAR</span>(<span class="num">2</span>) <span class="kw">NULL</span>,</span>
+<span class="legacy">    ZipCode             <span class="typ">VARCHAR</span>(<span class="num">10</span>) <span class="kw">NULL</span>,</span>
+    HomePhone           <span class="typ">VARCHAR</span>(<span class="num">20</span>) <span class="kw">NULL</span>,
+    EmergencyContact    <span class="typ">NVARCHAR</span>(<span class="num">200</span>) <span class="kw">NULL</span>,
+    <span class="kw">CONSTRAINT</span> PK_Patients <span class="kw">PRIMARY KEY CLUSTERED</span> (PatientID),
+    <span class="kw">CONSTRAINT</span> UQ_Patients_MRN <span class="kw">UNIQUE</span> (MRN)
+);
+
+<span class="cm">-- ─── Encounters ──────────────────────────────</span>
+<span class="kw">CREATE TABLE</span> <span class="fn">dbo.Encounters</span> (
+    EncounterID         <span class="typ">INT</span> <span class="kw">IDENTITY</span>(<span class="num">1</span>,<span class="num">1</span>) <span class="kw">NOT NULL</span>,
+    PatientID           <span class="typ">INT</span> <span class="kw">NOT NULL</span>,
+    EncounterType       <span class="typ">VARCHAR</span>(<span class="num">20</span>) <span class="kw">NOT NULL</span>,  <span class="cm">-- INPATIENT/OUTPATIENT/ER/OBSERVATION</span>
+    AdmitDate           <span class="typ">DATETIME</span> <span class="kw">NOT NULL</span>,
+    DischargeDate       <span class="typ">DATETIME</span> <span class="kw">NULL</span>,
+    AttendingPhysicianID <span class="typ">INT</span> <span class="kw">NOT NULL</span>,
+    DepartmentID        <span class="typ">INT</span> <span class="kw">NOT NULL</span>,
+    EncounterStatus     <span class="typ">VARCHAR</span>(<span class="num">20</span>) <span class="kw">DEFAULT</span> <span class="str">'ACTIVE'</span>,
+    <span class="kw">CONSTRAINT</span> PK_Encounters <span class="kw">PRIMARY KEY CLUSTERED</span> (EncounterID)
+);
+
+<span class="cm">-- ─── ClinicalNotes ───────────────────────────</span>
+<span class="cm">-- ⚠ Legacy: TEXT data type (deprecated)</span>
+<span class="kw">CREATE TABLE</span> <span class="fn">dbo.ClinicalNotes</span> (
+    NoteID              <span class="typ">INT</span> <span class="kw">IDENTITY</span>(<span class="num">1</span>,<span class="num">1</span>) <span class="kw">NOT NULL</span>,
+    EncounterID         <span class="typ">INT</span> <span class="kw">NOT NULL</span>,
+    NoteType            <span class="typ">VARCHAR</span>(<span class="num">50</span>) <span class="kw">NOT NULL</span>,
+<span class="legacy">    NoteText            <span class="typ">TEXT</span> <span class="kw">NOT NULL</span>,       <span class="cm">-- Legacy: should be NVARCHAR(MAX)</span></span>
+    AuthorPhysicianID   <span class="typ">INT</span> <span class="kw">NOT NULL</span>,
+    <span class="kw">CONSTRAINT</span> PK_ClinicalNotes <span class="kw">PRIMARY KEY CLUSTERED</span> (NoteID)
+);
+
+<span class="cm">-- ─── Procedures ──────────────────────────────</span>
+<span class="cm">-- ⚠ Legacy: IMAGE column for storing documents</span>
+<span class="kw">CREATE TABLE</span> <span class="fn">dbo.Procedures</span> (
+    ProcedureID         <span class="typ">INT</span> <span class="kw">IDENTITY</span>(<span class="num">1</span>,<span class="num">1</span>) <span class="kw">NOT NULL</span>,
+    EncounterID         <span class="typ">INT</span> <span class="kw">NOT NULL</span>,
+    CPTCode             <span class="typ">VARCHAR</span>(<span class="num">10</span>) <span class="kw">NOT NULL</span>,
+    ProcedureDate       <span class="typ">DATETIME</span> <span class="kw">NOT NULL</span>,
+<span class="legacy">    DocumentImage       <span class="typ">IMAGE</span> <span class="kw">NULL</span>,         <span class="cm">-- Legacy: should be VARBINARY(MAX)</span></span>
+    ProcedureStatus     <span class="typ">VARCHAR</span>(<span class="num">20</span>) <span class="kw">DEFAULT</span> <span class="str">'SCHEDULED'</span>,
+    <span class="kw">CONSTRAINT</span> PK_Procedures <span class="kw">PRIMARY KEY CLUSTERED</span> (ProcedureID)
+);
+  </pre>
+  <div class="footer">
+    <span>📋 PatientDB — 16 tables with legacy patterns highlighted</span>
+    <span>Lakeview Medical Center</span>
+  </div>
+</div>
+</body>
+</html>

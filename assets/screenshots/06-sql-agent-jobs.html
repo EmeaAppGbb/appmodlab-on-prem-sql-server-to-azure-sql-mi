@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SQL Agent Jobs — Automated Operations</title>
+<style>
+  body { margin:0; background:#1e1e1e; font-family:'Cascadia Code','Fira Code','Consolas',monospace; }
+  .window { max-width:960px; margin:24px auto; border-radius:10px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,.5); }
+  .titlebar { background:#323233; padding:10px 16px; display:flex; align-items:center; gap:8px; }
+  .dot { width:12px; height:12px; border-radius:50%; }
+  .dot.r { background:#ff5f57; } .dot.y { background:#febc2e; } .dot.g { background:#28c840; }
+  .titlebar span { color:#9d9d9d; font-size:13px; margin-left:12px; }
+  .badge { display:inline-block; font-size:11px; padding:2px 8px; border-radius:4px; margin-left:8px; }
+  .badge.blue { background:#0d47a1; color:#90caf9; }
+  pre { margin:0; padding:20px 24px; background:#1e1e1e; color:#d4d4d4; font-size:13px; line-height:1.55; overflow-x:auto; }
+  .kw { color:#569cd6; }
+  .fn { color:#dcdcaa; }
+  .str { color:#ce9178; }
+  .cm { color:#6a9955; }
+  .num { color:#b5cea8; }
+  .job { color:#64b5f6; font-weight:bold; }
+  .time { color:#ffcc80; }
+  .section { color:#81c784; font-weight:bold; display:block; margin-top:16px; border-bottom:1px solid #333; padding-bottom:4px; }
+  .footer { background:#1565c0; color:#fff; font-size:12px; padding:6px 16px; display:flex; justify-content:space-between; }
+</style>
+</head>
+<body>
+<div class="window">
+  <div class="titlebar">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span>SQLAgent / Jobs &amp; Alerts</span>
+    <span class="badge blue">⏰ 7 Jobs + 4 Alerts</span>
+  </div>
+  <pre>
+<span class="cm">-- ============================================</span>
+<span class="cm">-- SQL Agent Jobs — Lakeview Medical Center</span>
+<span class="cm">-- Nightly operations, monitoring, maintenance</span>
+<span class="cm">-- ============================================</span>
+
+<span class="section">── NIGHTLY BILLING BATCH ──────────────────────</span>
+<span class="kw">EXEC</span> <span class="fn">sp_add_job</span> @job_name = N<span class="str">'<span class="job">LMC - Nightly Billing Batch</span>'</span>;
+<span class="cm">-- Schedule: Daily at <span class="time">2:00 AM</span></span>
+<span class="cm">-- Steps: Post room charges → Create claims → Generate invoices</span>
+<span class="cm">-- Calls: BillingDB.dbo.usp_BatchNightlyBilling</span>
+
+<span class="section">── INSURANCE CLAIMS SUBMISSION ────────────────</span>
+<span class="kw">EXEC</span> <span class="fn">sp_add_job</span> @job_name = N<span class="str">'<span class="job">LMC - Daily Insurance Claims</span>'</span>;
+<span class="cm">-- Schedule: Twice daily at <span class="time">6:00 AM</span> and <span class="time">6:00 PM</span></span>
+<span class="cm">-- Steps: Submit pending → Process responses → Flag denials</span>
+<span class="cm">-- Uses: Linked server INSURANCE_CLEARINGHOUSE</span>
+
+<span class="section">── MONTHLY DATA ARCHIVAL ──────────────────────</span>
+<span class="kw">EXEC</span> <span class="fn">sp_add_job</span> @job_name = N<span class="str">'<span class="job">LMC - Monthly Data Archival</span>'</span>;
+<span class="cm">-- Schedule: 1st Sunday of month at <span class="time">1:00 AM</span></span>
+<span class="cm">-- Steps: Archive old records → Rebuild indexes</span>
+<span class="cm">-- Cursor-based batch processing (1000 rows/batch)</span>
+
+<span class="section">── STATISTICS UPDATE ──────────────────────────</span>
+<span class="kw">EXEC</span> <span class="fn">sp_add_job</span> @job_name = N<span class="str">'<span class="job">LMC - Statistics Update</span>'</span>;
+<span class="cm">-- Schedule: Daily at <span class="time">3:00 AM</span></span>
+<span class="cm">-- FULLSCAN on weekends, SAMPLE 50% on weekdays</span>
+
+<span class="section">── DATABASE BACKUP ────────────────────────────</span>
+<span class="kw">EXEC</span> <span class="fn">sp_add_job</span> @job_name = N<span class="str">'<span class="job">LMC - Full Database Backup</span>'</span>;
+<span class="cm">-- Schedule: Daily at <span class="time">11:00 PM</span></span>
+<span class="cm">-- Full backup with COMPRESSION + CHECKSUM</span>
+<span class="cm">-- 30-day retention, network share \\BACKUP-SERVER\</span>
+
+<span class="kw">EXEC</span> <span class="fn">sp_add_job</span> @job_name = N<span class="str">'<span class="job">LMC - Transaction Log Backup</span>'</span>;
+<span class="cm">-- Schedule: Every <span class="time">15 minutes</span></span>
+<span class="cm">-- FULL recovery databases only</span>
+
+<span class="section">── ALERTS ─────────────────────────────────────</span>
+<span class="kw">EXEC</span> <span class="fn">sp_add_alert</span> @name = N<span class="str">'Disk Space Warning'</span>;
+<span class="cm">-- Threshold: 20% warning, 10% critical</span>
+<span class="kw">EXEC</span> <span class="fn">sp_add_alert</span> @name = N<span class="str">'High Severity Error'</span>;
+<span class="cm">-- Severity 17-25 error capture</span>
+<span class="kw">EXEC</span> <span class="fn">sp_add_alert</span> @name = N<span class="str">'Transaction Log Full'</span>;
+<span class="cm">-- Error 9002 monitoring</span>
+<span class="cm">-- + Blocking detection job (2-min intervals, business hours)</span>
+  </pre>
+  <div class="footer">
+    <span>⏰ SQL Agent supported in Azure SQL MI — jobs migrate with minor adjustments</span>
+    <span>Supported ✓</span>
+  </div>
+</div>
+</body>
+</html>

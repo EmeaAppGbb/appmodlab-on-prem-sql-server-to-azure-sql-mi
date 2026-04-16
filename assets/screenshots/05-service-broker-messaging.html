@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Service Broker — Async Messaging Between Databases</title>
+<style>
+  body { margin:0; background:#1e1e1e; font-family:'Cascadia Code','Fira Code','Consolas',monospace; }
+  .window { max-width:960px; margin:24px auto; border-radius:10px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,.5); }
+  .titlebar { background:#323233; padding:10px 16px; display:flex; align-items:center; gap:8px; }
+  .dot { width:12px; height:12px; border-radius:50%; }
+  .dot.r { background:#ff5f57; } .dot.y { background:#febc2e; } .dot.g { background:#28c840; }
+  .titlebar span { color:#9d9d9d; font-size:13px; margin-left:12px; }
+  .badge { display:inline-block; font-size:11px; padding:2px 8px; border-radius:4px; margin-left:8px; }
+  .badge.purple { background:#4a148c; color:#ce93d8; }
+  .badge.info { background:#264f78; color:#569cd6; }
+  pre { margin:0; padding:20px 24px; background:#1e1e1e; color:#d4d4d4; font-size:13px; line-height:1.55; overflow-x:auto; }
+  .kw { color:#569cd6; }
+  .fn { color:#dcdcaa; }
+  .str { color:#ce9178; }
+  .cm { color:#6a9955; }
+  .obj { color:#c586c0; font-weight:bold; }
+  .section { color:#4fc3f7; font-weight:bold; display:block; margin-top:12px; }
+  .footer { background:#6a1b9a; color:#fff; font-size:12px; padding:6px 16px; display:flex; justify-content:space-between; }
+</style>
+</head>
+<body>
+<div class="window">
+  <div class="titlebar">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span>ServiceBroker / 01-ServiceBrokerSetup.sql</span>
+    <span class="badge purple">📨 Service Broker</span>
+    <span class="badge info">Async Messaging</span>
+  </div>
+  <pre>
+<span class="cm">-- ============================================</span>
+<span class="cm">-- Service Broker — PatientDB ↔ BillingDB</span>
+<span class="cm">-- Async messaging for encounter &amp; lab events</span>
+<span class="cm">-- ============================================</span>
+
+<span class="section">── MESSAGE TYPES ──────────────────────────────</span>
+<span class="kw">CREATE MESSAGE TYPE</span> [<span class="obj">PatientEncounterMessage</span>]
+    <span class="kw">VALIDATION</span> = WELL_FORMED_XML;
+<span class="kw">CREATE MESSAGE TYPE</span> [<span class="obj">PatientDischargeMessage</span>]
+    <span class="kw">VALIDATION</span> = WELL_FORMED_XML;
+<span class="kw">CREATE MESSAGE TYPE</span> [<span class="obj">BillingResponseMessage</span>]
+    <span class="kw">VALIDATION</span> = WELL_FORMED_XML;
+<span class="kw">CREATE MESSAGE TYPE</span> [<span class="obj">LabResultNotificationMessage</span>]
+    <span class="kw">VALIDATION</span> = WELL_FORMED_XML;
+
+<span class="section">── CONTRACTS ──────────────────────────────────</span>
+<span class="kw">CREATE CONTRACT</span> [<span class="obj">PatientBillingContract</span>] (
+    [PatientEncounterMessage]  <span class="kw">SENT BY INITIATOR</span>,
+    [PatientDischargeMessage]  <span class="kw">SENT BY INITIATOR</span>,
+    [BillingResponseMessage]   <span class="kw">SENT BY TARGET</span>
+);
+<span class="kw">CREATE CONTRACT</span> [<span class="obj">LabNotificationContract</span>] (
+    [LabResultNotificationMessage] <span class="kw">SENT BY INITIATOR</span>,
+    [BillingResponseMessage]       <span class="kw">SENT BY TARGET</span>
+);
+
+<span class="section">── QUEUES ─────────────────────────────────────</span>
+<span class="kw">CREATE QUEUE</span> <span class="fn">dbo.PatientEventSendQueue</span>;
+<span class="kw">CREATE QUEUE</span> <span class="fn">dbo.LabNotificationQueue</span>
+    <span class="kw">WITH ACTIVATION</span> (
+        PROCEDURE_NAME = <span class="fn">dbo.usp_ProcessLabNotification</span>,
+        MAX_QUEUE_READERS = <span class="str">4</span>,
+        EXECUTE AS OWNER
+    );
+
+<span class="section">── SERVICES ───────────────────────────────────</span>
+<span class="kw">CREATE SERVICE</span> [<span class="obj">PatientEventSendService</span>]
+    <span class="kw">ON QUEUE</span> dbo.PatientEventSendQueue
+    ([PatientBillingContract]);
+<span class="kw">CREATE SERVICE</span> [<span class="obj">LabNotificationService</span>]
+    <span class="kw">ON QUEUE</span> dbo.LabNotificationQueue
+    ([LabNotificationContract]);
+
+<span class="section">── ROUTES (Cross-Database) ────────────────────</span>
+<span class="kw">CREATE ROUTE</span> [<span class="obj">BillingEventRoute</span>]
+    <span class="kw">WITH</span> SERVICE_NAME = <span class="str">'BillingEventReceiveService'</span>,
+         ADDRESS      = <span class="str">'LOCAL'</span>;
+  </pre>
+  <div class="footer">
+    <span>📨 4 message types • 2 contracts • 3 queues • 3 services with activation procs</span>
+    <span>Supported in Azure SQL MI ✓</span>
+  </div>
+</div>
+</body>
+</html>
