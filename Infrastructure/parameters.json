@@ -1,0 +1,29 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus2"
+    },
+    "namePrefix": {
+      "value": "lakeview-mi-lab"
+    },
+    "sqlAdministratorLogin": {
+      "value": "sqladmin"
+    },
+    "aadAdminDisplayName": {
+      "value": "MI-Admins"
+    },
+    "aadAdminObjectId": {
+      "value": "<REPLACE-WITH-AAD-GROUP-OR-USER-OBJECT-ID>"
+    },
+    "tags": {
+      "value": {
+        "project": "lakeview-medical",
+        "environment": "lab",
+        "purpose": "sql-mi-migration",
+        "step": "provision-managed-instance"
+      }
+    }
+  }
+}

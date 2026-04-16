@@ -1,0 +1,10 @@
+Step 2: Provision Managed Instance - Created Infrastructure as Code (Bicep)
+Files created:
+  - Infrastructure\deploy.sh (6280 bytes)
+  - Infrastructure\main.bicep (4668 bytes)
+  - Infrastructure\parameters.json (712 bytes)
+  - Infrastructure\modules\dms.bicep (1980 bytes)
+  - Infrastructure\modules\sqlmi.bicep (5554 bytes)
+  - Infrastructure\modules\vnet.bicep (8845 bytes)
+
+CLI Command: gh copilot -- -p 'Create Bicep IaC files to deploy Azure SQL MI with VNet, DMS, and deployment script' --allow-all-tools --yolo
