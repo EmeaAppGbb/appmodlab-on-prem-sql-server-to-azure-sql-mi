@@ -1,0 +1,96 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "metadata": {
+        "description": "Azure Database Migration Service - Project Configuration for Lakeview Medical Center online migration from on-premises SQL Server 2016 to Azure SQL Managed Instance.",
+        "project": "lakeview-medical",
+        "step": "04-configure-dms"
+    },
+    "dmsProject": {
+        "projectName": "lakeview-medical-sqlmi-migration",
+        "description": "Online migration of Lakeview Medical Center databases from on-premises SQL Server 2016 to Azure SQL Managed Instance.",
+        "sourcePlatform": "SQL",
+        "targetPlatform": "SQLMI",
+        "migrationType": "OnlineMigration"
+    },
+    "sourceConnection": {
+        "dataSource": "<ON-PREM-SQL-SERVER-FQDN>",
+        "port": 1433,
+        "authentication": "SqlAuthentication",
+        "userName": "<SOURCE-SQL-USERNAME>",
+        "password": "<SOURCE-SQL-PASSWORD>",
+        "encryptConnection": true,
+        "trustServerCertificate": true
+    },
+    "targetConnection": {
+        "dataSource": "<SQL-MI-FQDN>.database.windows.net",
+        "port": 1433,
+        "authentication": "SqlAuthentication",
+        "userName": "sqladmin",
+        "password": "<TARGET-SQL-PASSWORD>",
+        "encryptConnection": true,
+        "trustServerCertificate": false
+    },
+    "databases": [
+        {
+            "sourceDatabaseName": "PatientDB",
+            "targetDatabaseName": "PatientDB",
+            "makeSourceDbReadOnly": false,
+            "tableMap": {},
+            "migrationSetting": {
+                "enableSchemaValidation": true,
+                "enableDataIntegrityValidation": true,
+                "enableQueryAnalysisValidation": false
+            }
+        },
+        {
+            "sourceDatabaseName": "BillingDB",
+            "targetDatabaseName": "BillingDB",
+            "makeSourceDbReadOnly": false,
+            "tableMap": {},
+            "migrationSetting": {
+                "enableSchemaValidation": true,
+                "enableDataIntegrityValidation": true,
+                "enableQueryAnalysisValidation": false
+            }
+        },
+        {
+            "sourceDatabaseName": "SchedulingDB",
+            "targetDatabaseName": "SchedulingDB",
+            "makeSourceDbReadOnly": false,
+            "tableMap": {},
+            "migrationSetting": {
+                "enableSchemaValidation": true,
+                "enableDataIntegrityValidation": true,
+                "enableQueryAnalysisValidation": false
+            }
+        },
+        {
+            "sourceDatabaseName": "ReportingDB",
+            "targetDatabaseName": "ReportingDB",
+            "makeSourceDbReadOnly": false,
+            "tableMap": {},
+            "migrationSetting": {
+                "enableSchemaValidation": true,
+                "enableDataIntegrityValidation": true,
+                "enableQueryAnalysisValidation": false
+            }
+        }
+    ],
+    "migrationSettings": {
+        "migrationType": "Online",
+        "backupFileSharePath": "\\\\<FILE-SERVER>\\SQLBackups\\LakeviewMedical",
+        "backupBlobContainerUri": "https://<STORAGE-ACCOUNT>.blob.core.windows.net/dms-backups",
+        "backupStorageAccountSasToken": "<SAS-TOKEN>",
+        "offlineConfiguration": {
+            "offline": false
+        },
+        "selectedAgentJobs": [],
+        "selectedLogins": [],
+        "validationOptions": {
+            "enableSchemaValidation": true,
+            "enableDataIntegrityValidation": true,
+            "enableQueryAnalysisValidation": false
+        }
+    }
+}

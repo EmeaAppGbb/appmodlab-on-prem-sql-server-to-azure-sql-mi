@@ -1,0 +1,5 @@
+Step 4: Configure DMS - Created DMS project setup, migration config, and pre-checks
+Files created:
+  - Migration/07-DMSProjectSetup.json - DMS project configuration for online migration
+  - Migration/08-DMSMigrationConfig.ps1 - PowerShell script to create DMS migration project
+  - Migration/09-DMSPreChecks.sql - Pre-migration checklist for source server readiness
