@@ -11,7 +11,7 @@ modernizationTools: ["Azure Migrate", "Data Migration Assistant"]
 agenticTools: []
 tags: ["sql-server", "managed-instance", "database-migration", "dms", "clr", "service-broker"]
 extensions: ["github.copilot"]
-thumbnail: "assets/screenshots/00-lab-architecture-overview.html"
+thumbnail: "https://raw.githubusercontent.com/EmeaAppGbb/appmodlab-on-prem-sql-server-to-azure-sql-mi/main/assets/thumbnail-gpt-image.png"
 video: ""
 version: "1.0.0"
 ---
